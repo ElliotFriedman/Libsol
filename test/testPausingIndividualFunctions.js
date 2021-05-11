@@ -68,10 +68,61 @@ describe("Test Pausing Functions", () => {
         );
     });
 
-    it("should not be able to pause the unpausable", async () => {
+    it("should not be able to pause the unpausable pauseFunction", async () => {
         await expectRevert(
             pause.pauseFunction("pauseFunction(string)"),
             "cannot pause unpauseable"
         );
+    });
+
+    it("should not be able to pause the unpausable unPauseFunction", async () => {
+        await expectRevert(
+            pause.pauseFunction("unPauseFunction(string)"),
+            "cannot pause unpauseable"
+        );
+    });
+      
+    it("should not be able to pause the functionToPause that is already paused", async () => {
+        const funcSig = "functionToPause(uint256,uint256)";
+        const funcSigHashed = sig(funcSig);
+
+        await expectRevert(
+            pause.pauseFunction(funcSig),
+            "already paused",
+        );
+
+        expect(
+            await pause.pausedFunctions(funcSigHashed)
+        ).to.be.true;
+    });
+      
+    it("should be able to unpause the functionToPause", async () => {
+        const funcSig = "functionToPause(uint256,uint256)";
+        const funcSigHashed = sig(funcSig);
+
+        const tx = await pause.unPauseFunction(funcSig);
+
+        await expectEvent(tx, "StatusChanged", {
+            signature: funcSigHashed,
+            status: false
+        });
+
+        expect(
+            await pause.pausedFunctions(funcSigHashed)
+        ).to.be.false;
+    });
+
+    it("should not be able to unpause the functionToPause if it is already unpaused", async () => {
+        const funcSig = "functionToPause(uint256,uint256)";
+        const funcSigHashed = sig(funcSig);
+
+        await expectRevert(
+            pause.unPauseFunction(funcSig),
+            "!paused"
+        );
+
+        expect(
+            await pause.pausedFunctions(funcSigHashed)
+        ).to.be.false;
     });
 });
