@@ -40,10 +40,22 @@ contract FunctionPausability {
             "cannot pause unpauseable"
         );
 
+        // revert if you have already paused this function
+        require(
+            _pausedFunctions[funcSig] == false,
+            "already paused"
+        );
+
         _setPauseStatus(funcSig, true);
     }
     
     function _unPauseFunction(bytes4 funcSig) internal {
+        // revert if you have already unpaused this function
+        require(
+            _pausedFunctions[funcSig] == true,
+            "!paused"
+        );
+
         _setPauseStatus(funcSig, false);
     }
     
